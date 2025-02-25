@@ -261,6 +261,7 @@ struct Node {
   NodeKind kind() const { return Kind; }
 
   virtual void output(OutputBuffer &OB, OutputFlags Flags) const = 0;
+  virtual void output_top_level(OutputBuffer& OB, OutputFlags Flags) const;
 
   std::string toString(OutputFlags Flags = OF_Default) const;
 
@@ -517,6 +518,8 @@ struct NodeArrayNode : public Node {
 
   void output(OutputBuffer &OB, OutputFlags Flags,
               std::string_view Separator) const;
+  void output_top_level(OutputBuffer& OB, OutputFlags Flags,
+      std::string_view Separator) const;
 
   Node **Nodes = nullptr;
   size_t Count = 0;
@@ -526,6 +529,7 @@ struct QualifiedNameNode : public Node {
   QualifiedNameNode() : Node(NodeKind::QualifiedName) {}
 
   void output(OutputBuffer &OB, OutputFlags Flags) const override;
+  void output_top_level(OutputBuffer& OB, OutputFlags Flags) const override;
 
   NodeArrayNode *Components = nullptr;
 
@@ -619,6 +623,7 @@ struct FunctionSymbolNode : public SymbolNode {
   FunctionSymbolNode() : SymbolNode(NodeKind::FunctionSymbol) {}
 
   void output(OutputBuffer &OB, OutputFlags Flags) const override;
+  void output_top_level(OutputBuffer& OB, OutputFlags Flags) const override;
 
   FunctionSignatureNode *Signature = nullptr;
 };

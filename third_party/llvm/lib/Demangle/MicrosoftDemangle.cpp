@@ -2454,7 +2454,7 @@ char *llvm::microsoftDemangle(std::string_view MangledName, size_t *NMangled,
     InternalStatus = demangle_invalid_mangled_name;
   else {
     OutputBuffer OB;
-    AST->output(OB, OF);
+    AST->output_top_level(OB, OF);
     OB += '\0';
     Buf = OB.getBuffer();
   }

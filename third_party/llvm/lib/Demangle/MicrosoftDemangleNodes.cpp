@@ -126,6 +126,11 @@ std::string Node::toString(OutputFlags Flags) const {
   return Owned;
 }
 
+void Node::output_top_level(OutputBuffer& OB, OutputFlags Flags) const {
+    // Unless overwritten, write nothing to the buffer
+    return;
+}
+
 void PrimitiveTypeNode::outputPre(OutputBuffer &OB, OutputFlags Flags) const {
   switch (PrimKind) {
     OUTPUT_ENUM_CLASS_VALUE(PrimitiveKind, Void, "void");
@@ -167,6 +172,25 @@ void NodeArrayNode::output(OutputBuffer &OB, OutputFlags Flags,
     OB << Separator;
     Nodes[I]->output(OB, Flags);
   }
+}
+
+void NodeArrayNode::output_top_level(OutputBuffer& OB, OutputFlags Flags,
+    std::string_view Separator) const {
+    // If this is the top level qualified name, output all components but one
+    // Then a seperator
+    // Then the final component
+    if (Count == 0)
+        return;
+    if (Nodes[0])
+        Nodes[0]->output(OB, Flags);
+    for (size_t I = 1; I < Count - 1; ++I) {
+        OB << Separator;
+        Nodes[I]->output(OB, Flags);
+    }
+    OB << "\x1F  ::__Q::__#####__::__Q::  \x1F";
+    if (Nodes[Count - 1]) {
+        Nodes[Count - 1]->output(OB, Flags);
+    }
 }
 
 void EncodedStringLiteralNode::output(OutputBuffer &OB,
@@ -589,6 +613,13 @@ void FunctionSymbolNode::output(OutputBuffer &OB, OutputFlags Flags) const {
   Signature->outputPost(OB, Flags);
 }
 
+void FunctionSymbolNode::output_top_level(OutputBuffer& OB, OutputFlags Flags) const {
+    // Signature->outputPre(OB, Flags);
+    // outputSpaceIfNecessary(OB);
+    Name->output_top_level(OB, Flags);
+    // Signature->outputPost(OB, Flags);
+}
+
 void VariableSymbolNode::output(OutputBuffer &OB, OutputFlags Flags) const {
   const char *AccessSpec = nullptr;
   bool IsStatic = true;
@@ -627,6 +658,10 @@ void CustomTypeNode::outputPost(OutputBuffer &OB, OutputFlags Flags) const {}
 
 void QualifiedNameNode::output(OutputBuffer &OB, OutputFlags Flags) const {
   Components->output(OB, Flags, "::");
+}
+
+void QualifiedNameNode::output_top_level(OutputBuffer& OB, OutputFlags Flags) const {
+  Components->output_top_level(OB, Flags, "::");
 }
 
 void RttiBaseClassDescriptorNode::output(OutputBuffer &OB,
